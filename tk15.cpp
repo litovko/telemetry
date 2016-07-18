@@ -46,7 +46,11 @@ void tk15::onClientReadyRead()
     datagram.resize(m_client->pendingDatagramSize());
     m_client->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
     setData(datagram);
-    m_current.append("one"); m_current.append("two"); emit currentChanged();
+    m_current.clear();
+    m_current.append("Sender:"+sender.toString());
+    m_current.append("SenderPort:"+ QString::number(senderPort));
+    m_current.append("Data:"+ datagram);
+    emit currentChanged();
 }
 
 void tk15::saveSettings()

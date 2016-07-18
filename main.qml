@@ -32,52 +32,49 @@ Window {
             anchors.margins:   10
             anchors.top: parent.top
             anchors.left: parent.left
-            //padding:5
+            property var someNumber: tk.current
+            Component {
+                    id: parametrstring
+                    //property string str: "null"
+                    Text
+                    {
+                        id: t
+                        Rectangle{ border.color: "#f10606";anchors.fill: parent
+                            opacity: 0.5
+                        gradient: Gradient {
+                            GradientStop {
+                                position: 0.00;
+                                color: "#cf7474";
+                            }
+                            GradientStop {
+                                position: 0.50;
+                                color: "#00aaff";
+                            }
+                            GradientStop {
+                                position: 1.00;
+                                color: "#888888";
+                            }
+                        }
+                        }
 
-            Text
-            {
-                Rectangle{anchors.fill: parent
-                gradient: Gradient {
-                    //GradientStop { position: 0.0; color: "black" }
-                    GradientStop { position: 0.7; color: "transparent" }
-                    GradientStop { position: 1.0; color: "blue" }
+                        text: qsTr("Адрес:порт: "+tk.address+":"+tk.port)
+                        color: "yellow"
+                        font.bold: true
+                        font.pointSize: 20
+
+                    }
                 }
+            onSomeNumberChanged: {
+
+                    for(var i = c.children.length; i > 0 ; i--) {
+                        console.log("destroying: " + i)
+                        c.children[i-1].destroy()
+                      }
+                    for (var i=0;i<tk.current.length;i++) {
+                      var r = parametrstring.createObject(c)
+                      r.text=tk.current[i]
+                    }
                 }
-
-                text: qsTr("Адрес:порт: "+tk.address+":"+tk.port)
-                color: "yellow"
-                font.bold: true
-                font.pointSize: 20
-
-            }
-            Text {
-                Rectangle{anchors.fill: parent
-                gradient: Gradient {
-                    //GradientStop { position: 0.0; color: "black" }
-                    GradientStop { position: 0.7; color: "transparent" }
-                    GradientStop { position: 1.0; color: "blue" }
-                }
-                }
-                text: qsTr("Данные:"+tk.data)
-                color: "#ffff00"
-
-                font.bold: true
-                font.pointSize: 20
-
-            }
-            Text {
-                text: qsTr("Ток1:"+tk.current[0])
-                color: "#ffff00"
-                font.bold: true
-                font.pointSize: 20
-            }
-            Text {
-                text: qsTr("Ток2:"+tk.current[1])
-                color: "#ffff00"
-                font.bold: true
-                font.pointSize: 20
-            }
-
             }
     }
 
