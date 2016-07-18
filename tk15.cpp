@@ -46,6 +46,7 @@ void tk15::onClientReadyRead()
     datagram.resize(m_client->pendingDatagramSize());
     m_client->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
     setData(datagram);
+    m_current.append("one"); m_current.append("two"); emit currentChanged();
 }
 
 void tk15::saveSettings()
@@ -60,6 +61,11 @@ void tk15::readSettings()
     QSettings settings("HYCO", "TK15");
     setAddress(settings.value("Address","192.168.1.168").toString());
     setPort(settings.value("Port", 9999).toInt());
+}
+
+QStringList tk15::current() const
+{
+    return m_current;
 }
 
 

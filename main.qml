@@ -27,15 +27,16 @@ Window {
         border.width: 3
         focus:true
         Column{
+            id: c
             spacing: 15
             anchors.margins:   10
             anchors.top: parent.top
             anchors.left: parent.left
             //padding:5
+
             Text
             {
                 Rectangle{anchors.fill: parent
-                //color: "transparent"
                 gradient: Gradient {
                     //GradientStop { position: 0.0; color: "black" }
                     GradientStop { position: 0.7; color: "transparent" }
@@ -51,7 +52,6 @@ Window {
             }
             Text {
                 Rectangle{anchors.fill: parent
-                //color: "transparent"
                 gradient: Gradient {
                     //GradientStop { position: 0.0; color: "black" }
                     GradientStop { position: 0.7; color: "transparent" }
@@ -65,7 +65,20 @@ Window {
                 font.pointSize: 20
 
             }
-        }
+            Text {
+                text: qsTr("Ток1:"+tk.current[0])
+                color: "#ffff00"
+                font.bold: true
+                font.pointSize: 20
+            }
+            Text {
+                text: qsTr("Ток2:"+tk.current[1])
+                color: "#ffff00"
+                font.bold: true
+                font.pointSize: 20
+            }
+
+            }
     }
 
 }
