@@ -1,7 +1,7 @@
 TEMPLATE = app
 
 QT += qml quick network
-CONFIG += c++11
+CONFIG += c++11 console
 
 SOURCES += main.cpp \
     tk15.cpp
@@ -16,3 +16,8 @@ include(deployment.pri)
 
 HEADERS += \
     tk15.h
+
+DISTFILES += \
+    tk15.ico
+
+RC_ICONS = tk15.ico
