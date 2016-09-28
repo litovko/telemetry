@@ -29,12 +29,16 @@ class tk15 : public QQuickItem
     Q_PROPERTY(double angle1 READ angle1 NOTIFY angle1Changed)
 //    Угол наклона 2
     Q_PROPERTY(double angle2 READ angle2 NOTIFY angle2Changed)
+//    Коррекция угла наклона 1
+    Q_PROPERTY(double angle1k READ angle1k NOTIFY angle1kChanged)
+//    Коррекция угла наклона 2
+    Q_PROPERTY(double angle2k READ angle2k NOTIFY angle2kChanged)
 //    Датчик тока 1
     Q_PROPERTY(double current1 READ current1 NOTIFY current1Changed)
 //    Датчик тока 2
     Q_PROPERTY(double current2 READ current2 NOTIFY current2Changed)
 //    Датчик тока 3
-    Q_PROPERTY(double current3 READ current2 NOTIFY current3Changed)
+    Q_PROPERTY(double current3 READ current3 NOTIFY current3Changed)
 //    Датчик напряжения
     Q_PROPERTY(double voltage READ voltage NOTIFY voltageChanged)
 
@@ -119,6 +123,8 @@ signals:
     void pressureChanged();
     void angle1Changed();
     void angle2Changed();
+    void angle1kChanged();
+    void angle2kChanged();
     void current1Changed();
     void current2Changed();
     void current3Changed();
@@ -130,7 +136,7 @@ signals:
     void client_connectedChanged();
 
     void timer_connect_intervalChanged();
-    //void sendData(); //слот должен вызываться любым событием, которое меняет данные, предназначенные для отправки.
+
 
 
 public slots:
@@ -157,18 +163,18 @@ private:
     QTimer timer_connect;
     int m_timer_connect_interval=20000;
     QByteArray Data="";
-    double m_temperature=0;
+    double m_temperature=14;
 
-    double m_pressure=0;
+    double m_pressure=109;
     double m_pressurek=1.5;
-    double m_angle1=0;
-    double m_angle2=0;
+    double m_angle1=1;
+    double m_angle2=3;
     double m_angle1k=0;
     double m_angle2k=0;
-    double m_current1=0;
-    double m_current2=0;
-    double m_current3=0;
-    double m_voltage=0;
+    double m_current1=20;
+    double m_current2=17;
+    double m_current3=19;
+    double m_voltage=408;
     double m_current1k=1;
     double m_current2k=1;
     double m_current3k=1;

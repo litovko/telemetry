@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>Pribor.qml</file>
+        <file>MyLamp.qml</file>
+		<file>MyBubble2.qml</file>
     </qresource>
 </RCC>

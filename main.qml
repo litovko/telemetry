@@ -82,7 +82,15 @@ Window {
             if (event.key === Qt.Key_F10 || event.key === Qt.Key_0) win.fcommand("QUIT")
             if (event.key === Qt.Key_F12 || event.key === Qt.Key_Equal) win.fcommand("FULLSCREEN")
         }
-
+        MyBubble2 {
+            id: bubble
+            //anchors.centerIn: parent
+            height:300
+            width:300
+            anchors.centerIn: parent
+            roll: Math.round(tk.angle1)
+            pitch: Math.round(tk.angle2)
+        }
         Rectangle {
             id: panel
             anchors.margins:   10
@@ -146,22 +154,24 @@ Window {
                         value: tk.pressure
                         centerТext: "Атм."
                         bottomText: "Давление"
-                        warningThreshold: maximumValue*0.8
+                        warningThreshold: maximumValue*0.6
                         minorTickmarks:4
+                        precision: 0
                     }
                  }
-                Rectangle {
-                    //anchors.margins: 5
-                    width:  10;
+                MyLamp {
+                    width:  150;
                     height: 150;
-                    color: tk.overshort_1===true?"red":"grey"
+                    active: tk.overshort_1
+                    bottomText: "Овершот 1"
                 }
-                Rectangle {
-                    //anchors.margins: 5
-                    width:  10;
+                MyLamp {
+                    width:  150;
                     height: 150;
-                    color: tk.overshort_2===true?"red":"green"
+                    active: tk.overshort_2
+                    bottomText: "Овершот 2"
                 }
+
                 Rectangle {
                     color:"transparent";
                     width:  150;
@@ -169,7 +179,7 @@ Window {
                     anchors.margins: 5
                     Pribor {
                         width: parent.width-10; height: parent.height-10
-                        maximumValue: 400
+                        maximumValue: 500
                         minimunValue: 0
                         stepSize: 100
 
@@ -197,6 +207,7 @@ Window {
                         bottomText: "Ток1"
                         warningThreshold: maximumValue*0.8
                         minorTickmarks:4
+                        precision: 1
                     }
                  }
                 Rectangle {
@@ -215,6 +226,7 @@ Window {
                         bottomText: "Ток2"
                         warningThreshold: maximumValue*0.8
                         minorTickmarks:4
+                        precision: 1
                     }
                  }
                 Rectangle {
@@ -233,6 +245,7 @@ Window {
                         bottomText: "Ток3"
                         warningThreshold: maximumValue*0.8
                         minorTickmarks:4
+                        precision: 1
                     }
                  }
             }
