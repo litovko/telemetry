@@ -4,6 +4,7 @@
 #include <QQuickItem>
 #include "qstring.h"
 #include <QTcpSocket>
+#include <QUdpSocket>
 #include <QTimer>
 
 class tk15 : public QQuickItem
@@ -114,6 +115,9 @@ public:
     double angle2k() const;
     void setAngle2k(double angle2k);
 
+    bool tcp() const;
+    void setTcp(bool tcp);
+
 signals:
     void addressChanged();
     void portChanged();
@@ -132,19 +136,19 @@ signals:
     void overshort_1Changed();
     void overshort_2Changed();
 
-    //TCP
     void client_connectedChanged();
 
     void timer_connect_intervalChanged();
-
-
 
 public slots:
     void clientConnected();  // слот для обработки события присоединения клиента к серверу.
     void clientDisconnected();
     void displayError(QAbstractSocket::SocketError socketError);
-    void readData(); //расклаываем полученные от сервера данные по параметрам
+    void readData(); //раскладываем полученные от сервера данные по параметрам
     void start_client();
+
+    //UDP
+    void onClientReadyRead();
 private:
     //TCP
     QString m_address="localhost";
@@ -152,9 +156,13 @@ private:
 
     QTcpSocket tcpClient;
     bool m_client_connected = false;
-    //DATA
+    bool m_tcp=true;
+    //UDP
+    QUdpSocket *m_client;
+    int m_udpcount=0;
+    //DATA UDP
     QString m_data="null";
-
+    //SETTINGS
     void saveSettings();
     void readSettings();
     QStringList m_list;
@@ -162,6 +170,7 @@ private:
     //TIMING
     QTimer timer_connect;
     int m_timer_connect_interval=20000;
+    //DATA
     QByteArray Data="";
     double m_temperature=14;
 

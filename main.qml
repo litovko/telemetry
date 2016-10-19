@@ -13,7 +13,7 @@ Window {
     //color: "transparent"
     MouseArea {
         anchors.fill: parent
-        onClicked: {
+        onDoubleClicked: {
             win.fcommand("FULLSCREEN")
         }
     }
@@ -298,7 +298,7 @@ Window {
                         //console.log("destroying: " + i)
                         c.children[i-1].destroy()
                       }
-                    for (var i=0;i<tk.list.length;i++) {
+                    for (i=0;i<tk.list.length;i++) {
                       var r = parametrstring.createObject(c)
                       r.text=tk.list[i]
                     }

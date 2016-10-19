@@ -13,8 +13,21 @@ tk15::tk15()
     connect(&tcpClient, SIGNAL(readyRead()),this, SLOT(readData()));
     connect(&tcpClient, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(displayError(QAbstractSocket::SocketError)));
     connect(&timer_connect, SIGNAL(timeout()), this, SLOT(start_client()));
-    timer_connect.start(m_timer_connect_interval);
-    start_client();
+
+
+
+    if(m_tcp) {
+        timer_connect.start(m_timer_connect_interval);
+        start_client();
+    }
+    else {
+        m_client = new QUdpSocket();
+        m_client->bind(QHostAddress(address()), port());
+        qDebug()<<"Bind address:"<<address()<<" Bind port: "<<port();
+        //UDP
+        connect(m_client, SIGNAL(readyRead()), SLOT(onClientReadyRead()));
+    }
+
 
 }
 
@@ -22,7 +35,9 @@ tk15::~tk15()
 {
     saveSettings();
     qDebug()<<"Деструктор класса ТК15";
+    if(!m_tcp) delete m_client;
 }
+
 
 QString tk15::address() const
 {
@@ -65,6 +80,7 @@ void tk15::saveSettings()
     QSettings settings("HYCO", "TK15");
     settings.setValue("Address",m_address);
     settings.setValue("Port",m_port);
+    settings.setValue("TCP",m_tcp);
     settings.setValue("K_pressure",m_pressurek);
     settings.setValue("K_current1",m_current1k);
     settings.setValue("K_current2",m_current2k);
@@ -81,6 +97,7 @@ void tk15::readSettings()
     QSettings settings("HYCO", "TK15");
     setAddress(settings.value("Address","192.168.1.168").toString());
     setPort(settings.value("Port", 9999).toInt());
+    setTcp(settings.value("TCP", true).toBool());
     setPressurek(settings.value("K_pressure",1).toDouble());
     setCurrent1k(settings.value("K_current1",1).toDouble());
     setCurrent2k(settings.value("K_current2",1).toDouble());
@@ -88,7 +105,7 @@ void tk15::readSettings()
     setVoltagek(settings.value( "K_voltage", 1).toDouble());
     setAngle1k(settings.value( "K_angle1k", 0).toDouble());
     setAngle2k(settings.value( "K_angle2k", 0).toDouble());
-    qDebug()<<"v:"<<voltagek()<<" p:"<<pressurek()<<" c1:"<<current1k()<<" c2:"<<current2k()<<" c2:"<<current2k();
+    qDebug()<<"tcp:"<<tcp()<<"v:"<<voltagek()<<" p:"<<pressurek()<<" c1:"<<current1k()<<" c2:"<<current2k()<<" c2:"<<current2k();
 }
 
 int tk15::timer_connect_interval() const
@@ -153,6 +170,30 @@ void tk15::displayError(QAbstractSocket::SocketError socketError)
     tcpClient.close();
 
 }
+
+void tk15::onClientReadyRead()
+{
+    QHostAddress sender;
+    quint16 senderPort;
+    QByteArray datagram;
+    datagram.resize(m_client->pendingDatagramSize());
+    m_client->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
+    //setData(datagram);
+    Data.append(datagram);
+    qDebug()<<"UDP Datagram["<<datagram<<"] from addr:"<<sender<<"port:"<<senderPort;
+    readData();
+    m_udpcount+=1;
+}
+
+bool tk15::tcp() const
+{
+    return m_tcp;
+}
+
+void tk15::setTcp(bool tcp)
+{
+    m_tcp = tcp;
+}
 /*
 Передача цифровых датчиков
 №	Содержание	Описание	Примечание
@@ -210,12 +251,15 @@ void tk15::readData()
     quint16 crc0=0;
     char d_type=0;
 
-    Datagramma = tcpClient.readAll();
-    Data.append(Datagramma);
+    if (m_tcp) {
+        Datagramma = tcpClient.readAll();
+        Data.append(Datagramma);
+    }
+
     qDebug()<<"TK15 telemetry data read :"<<Data.toHex()<<Data.length();
     if (Data.length()<2) return;
     int i=Data.indexOf(0x55);
-    fill_list();
+
     while (i>=0)
     {
         d_type=Data.at(i+1);
@@ -261,7 +305,8 @@ void tk15::readData()
 
         i=Data.indexOf(0x55);
     }
-    emit listChanged();
+    fill_list();
+
 }
 
 void tk15::fill_list()
@@ -283,8 +328,11 @@ void tk15::fill_list()
 //    m_list.append("Овершот1:"+QString().number(m_overshort_1));
 //    m_list.append("Овершот2:"+QString().number(m_overshort_2));
     m_list.append(":"); m_list.append(":"); m_list.append(":"); m_list.append(":"); m_list.append(":");
-    if (client_connected()) m_list.append("Соединение установлено");
-    if (!client_connected()) m_list.append("Соединение разорвано");
+    if(m_tcp) {
+      if (client_connected()) m_list.append("Соединение установлено");
+      if (!client_connected()) m_list.append("Соединение разорвано");
+    }
+    else m_list.append("UDP:"+QString().number(m_udpcount));
     emit listChanged();
 }
 
