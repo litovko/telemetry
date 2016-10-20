@@ -149,6 +149,8 @@ public slots:
 
     //UDP
     void onClientReadyRead();
+
+    void fill_list();
 private:
     //TCP
     QString m_address="localhost";
@@ -166,9 +168,10 @@ private:
     void saveSettings();
     void readSettings();
     QStringList m_list;
-    void fill_list();
+
     //TIMING
     QTimer timer_connect;
+    QTimer timer_showdata;
     int m_timer_connect_interval=20000;
     //DATA
     QByteArray Data="";

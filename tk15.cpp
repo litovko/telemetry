@@ -13,8 +13,9 @@ tk15::tk15()
     connect(&tcpClient, SIGNAL(readyRead()),this, SLOT(readData()));
     connect(&tcpClient, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(displayError(QAbstractSocket::SocketError)));
     connect(&timer_connect, SIGNAL(timeout()), this, SLOT(start_client()));
+    connect(&timer_showdata, SIGNAL(timeout()), this, SLOT(fill_list();));
 
-
+    timer_showdata.start(500);
 
     if(m_tcp) {
         timer_connect.start(m_timer_connect_interval);
@@ -254,32 +255,32 @@ void tk15::readData()
     if (m_tcp) {
         Datagramma = tcpClient.readAll();
         Data.append(Datagramma);
-    }
-
-    qDebug()<<"TK15 telemetry data read :"<<Data.toHex()<<Data.length();
-    if (Data.length()<2) return;
+    }  
+    if (Data.length()>200) { Data.clear(); return;}
     int i=Data.indexOf(0x55);
 
-    while (i>=0)
+    while (i>=0&&Data.length()>=len_digital) //(len_analog<len_digital?len_analog:len_digital)
     {
+        qDebug()<<"LENGTH:"<<Data.length()<<"TK15 telemetry DATA:"<<Data.toHex();
         d_type=Data.at(i+1);
-        qDebug()<<"i="<<i<<"t:"<<int(d_type);
+
+
         if (d_type==type_digital) Datagramma=Data.mid(i, len_digital);
         if (d_type==type_analog) Datagramma=Data.mid(i, len_analog);
-        crc = qChecksum(Datagramma.data(), Datagramma.length()-2);
-        qDebug()<<"Datagramma:"<<Datagramma.mid(0,Datagramma.length()-2).toHex();
-        qDebug()<<"len:" <<Datagramma.length();
-        qDebug()<<Datagramma[Datagramma.length()-1]*1;
+
+        qDebug()<<"i->55="<<i<<"type:"<<d_type<<"Datagramma:"<<Datagramma.mid(0,Datagramma.length()-2).toHex();
+        //qDebug()<<"len:" <<Datagramma.length();
+        //qDebug()<<Datagramma[Datagramma.length()-1]*1;
 //        unsigned char c1=Datagramma[Datagramma.length()-1];
 //        unsigned char c2=Datagramma[Datagramma.length()-2];
 //        crc0=c1*256+c2; qDebug()<<"c1:"<<c1<<" c2:"<<c2;
+        crc = qChecksum(Datagramma.data(), Datagramma.length()-2);
         crc0=(unsigned char)Datagramma[Datagramma.length()-1]*256+(unsigned char)Datagramma[Datagramma.length()-2]*1;
         QByteArray b=""; b.append(Datagramma[Datagramma.length()-1]).append(Datagramma[Datagramma.length()-2]);
-        qDebug()<<"crc:"<<b.toHex();
-        qDebug()<<"TK15 telemetry crc0 :"<<::QString().number(crc0);
-        qDebug()<<"TK15 telemetry data SRC :"<<::QString().number(crc);
-        m_list.append("Данные:"+Datagramma.toHex());
-        m_list.append("CRC:"+::QString().number(crc)+"<>"+::QString().number(crc0));
+        //qDebug()<<"crc:"<<b.toHex();
+        qDebug()<<"crc0 :"<<::QString().number(crc0)<<"SRC :"<<::QString().number(crc);
+        qDebug()<<"Datagramma->:"<<Datagramma.toHex();
+
         if(d_type==type_digital) {
             Data=Data.mid(i+len_digital, Data.length());
             setOvershort_1(Datagramma.at(2)^1);
@@ -300,12 +301,13 @@ void tk15::readData()
 
             setPressure(pressurek()*(Datagramma.at(10)|Datagramma.at(11)<<8));
         }
-        qDebug()<<"truncated:"<<Data.toHex();
-
-
         i=Data.indexOf(0x55);
     }
-    fill_list();
+    qDebug()<<"truncated:"<<Data.toHex();
+//    fill_list();
+//    m_list.append("Данные:"+Datagramma.toHex());
+//    m_list.append("CRC:"+::QString().number(crc)+"<>"+::QString().number(crc0));
+//    emit listChanged();
 
 }
 
