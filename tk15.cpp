@@ -13,7 +13,7 @@ tk15::tk15()
     connect(&tcpClient, SIGNAL(readyRead()),this, SLOT(readData()));
     connect(&tcpClient, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(displayError(QAbstractSocket::SocketError)));
     connect(&timer_connect, SIGNAL(timeout()), this, SLOT(start_client()));
-    connect(&timer_showdata, SIGNAL(timeout()), this, SLOT(fill_list();));
+    connect(&timer_showdata, SIGNAL(timeout()), this, SLOT(fill_list()));
 
     timer_showdata.start(500);
 
@@ -109,6 +109,16 @@ void tk15::readSettings()
     qDebug()<<"tcp:"<<tcp()<<"v:"<<voltagek()<<" p:"<<pressurek()<<" c1:"<<current1k()<<" c2:"<<current2k()<<" c2:"<<current2k();
 }
 
+long tk15::count() const
+{
+    return m_count;
+}
+
+void tk15::setCount(long count)
+{
+    m_count = count;
+}
+
 int tk15::timer_connect_interval() const
 {
     return m_timer_connect_interval;
@@ -150,7 +160,7 @@ void tk15::clientConnected()
 {
     qDebug()<<"Telemetry Client connected to address >>>"+this->address()+" port:"+ ::QString().number(m_port);
     setClient_connected(true);
-    fill_list();
+    //fill_list();
 
 }
 
@@ -158,7 +168,7 @@ void tk15::clientDisconnected()
 {
     qDebug()<<" TK15 Telemetry Client disconnected ";
     setClient_connected(false);
-    fill_list();
+    //fill_list();
 }
 
 void tk15::displayError(QAbstractSocket::SocketError socketError)
@@ -167,7 +177,7 @@ void tk15::displayError(QAbstractSocket::SocketError socketError)
         return;
     qDebug()<<"TK15 Network error >>>"+tcpClient.errorString();
 
-    fill_list();
+    //fill_list();
     tcpClient.close();
 
 }
@@ -256,7 +266,8 @@ void tk15::readData()
         Datagramma = tcpClient.readAll();
         Data.append(Datagramma);
     }  
-    if (Data.length()>200) { Data.clear(); return;}
+    Data=Data.right(len_analog+len_digital+10);
+    //if (Data.length()>200) { Data.clear(); return;}  //большие данные просто пропускаем.
     int i=Data.indexOf(0x55);
 
     while (i>=0&&Data.length()>=len_digital) //(len_analog<len_digital?len_analog:len_digital)
@@ -313,12 +324,14 @@ void tk15::readData()
 
 void tk15::fill_list()
 {
-    m_list.clear();
+    m_count+=1;
+    m_list.clear();m_list.clear();
     //m_list.append("Адрес:"+m_address.toLatin1());
-    m_list.append("Адрес:"+m_address);
-    m_list.append("Порт:"+::QString().number(m_port));
-    m_list.append("Коррекция угла 1:"+QString().number(m_angle1k));
-    m_list.append("Коррекция угла 2:"+QString().number(m_angle2k));
+    m_list.append("Адрес:"+m_address+" Порт:"+::QString().number(m_port));
+   //m_list.append();
+    m_list.append("c:"+::QString().number(m_count));
+//    m_list.append("Коррекция угла 1:"+QString().number(m_angle1k));
+//    m_list.append("Коррекция угла 2:"+QString().number(m_angle2k));
 //    m_list.append("Угол 1:"+QString().number(m_angle1));
 //    m_list.append("Угол 2:"+QString().number(m_angle2));
 //    m_list.append("Давление:"+QString().number(m_pressure));
@@ -329,13 +342,33 @@ void tk15::fill_list()
 //    m_list.append("Температура:"+QString().number(m_temperature));
 //    m_list.append("Овершот1:"+QString().number(m_overshort_1));
 //    m_list.append("Овершот2:"+QString().number(m_overshort_2));
-    m_list.append(":"); m_list.append(":"); m_list.append(":"); m_list.append(":"); m_list.append(":");
+//    m_list.append(":"); m_list.append(":"); m_list.append(":"); m_list.append(":"); m_list.append(":");
     if(m_tcp) {
       if (client_connected()) m_list.append("Соединение установлено");
       if (!client_connected()) m_list.append("Соединение разорвано");
     }
     else m_list.append("UDP:"+QString().number(m_udpcount));
     emit listChanged();
+    emit current1Changed();
+    emit current2Changed();
+    emit current3Changed();
+
+    emit voltageChanged();
+
+    emit angle1Changed();
+    emit angle2Changed();
+
+    emit temperatureChanged();
+    emit pressureChanged();
+
+    qDebug()<<"c:"<<m_count<<";c1:"<<m_current1
+                           <<";c2:"<<m_current2
+                           <<";c3:"<<m_current3
+                           <<";VV:"<<m_voltage
+                           <<";a1:"<<m_angle1
+                           <<";a2:"<<m_angle2
+                           <<";t1:"<<m_temperature
+                           <<";p1:"<<m_pressure;
 }
 
 double tk15::angle2k() const
@@ -345,6 +378,7 @@ double tk15::angle2k() const
 
 void tk15::setAngle2k(double angle2k)
 {
+    if (m_angle2k == angle2k) return;
     m_angle2k = angle2k;
     emit angle2kChanged();
 }
@@ -357,6 +391,7 @@ double tk15::angle1k() const
 
 void tk15::setAngle1k(double angle1k)
 {
+    if( m_angle1k == angle1k) return;
     m_angle1k = angle1k;
     emit angle1kChanged();
 }
@@ -368,6 +403,7 @@ double tk15::pressurek() const
 
 void tk15::setPressurek(double pressurek)
 {
+    if(m_pressurek == pressurek) return;
     m_pressurek = pressurek;
     emit pressureChanged();
 }
@@ -379,6 +415,7 @@ double tk15::voltagek() const
 
 void tk15::setVoltagek(double voltagek)
 {
+    if(m_voltagek == voltagek) return;
     m_voltagek = voltagek;
     emit voltageChanged();
 }
@@ -390,6 +427,7 @@ double tk15::current3k() const
 
 void tk15::setCurrent3k(double current3k)
 {
+    if(m_current3k == current3k) return;
     m_current3k = current3k;
 }
 
@@ -400,6 +438,7 @@ double tk15::current2k() const
 
 void tk15::setCurrent2k(double current2k)
 {
+    if(m_current2k == current2k) return;
     m_current2k = current2k;
 }
 
@@ -410,6 +449,7 @@ double tk15::current1k() const
 
 void tk15::setCurrent1k(double current1k)
 {
+    if(m_current1k == current1k) return;
     m_current1k = current1k;
 }
 
@@ -420,6 +460,7 @@ bool tk15::overshort_2() const
 
 void tk15::setOvershort_2(bool overshort_2)
 {
+    if(m_overshort_2 == overshort_2) return;
     m_overshort_2 = overshort_2;
     emit overshort_2Changed();
 }
@@ -431,6 +472,7 @@ bool tk15::overshort_1() const
 
 void tk15::setOvershort_1(bool overshort_1)
 {
+    if(m_overshort_1 == overshort_1) return;
     m_overshort_1 = overshort_1;
     emit overshort_1Changed();
 }
@@ -442,6 +484,7 @@ double tk15::voltage() const
 
 void tk15::setVoltage(double voltage)
 {
+    if(m_voltage == voltage) return;
     m_voltage = voltage;
     emit voltageChanged();
 }
@@ -453,17 +496,20 @@ double tk15::current3() const
 
 void tk15::setCurrent3(double current3)
 {
+    if(m_current3 == current3) return;
     m_current3 = current3;
     emit current3Changed();
 }
 
 double tk15::current2() const
 {
+
     return m_current2;
 }
 
 void tk15::setCurrent2(double current2)
 {
+    if(m_current2 == current2) return;
     m_current2 = current2;
     emit current2Changed();
 }
@@ -475,6 +521,7 @@ double tk15::current1() const
 
 void tk15::setCurrent1(double current1)
 {
+    if(m_current1 == current1) return;
     m_current1 = current1;
     emit current1Changed();
 }
@@ -486,6 +533,7 @@ double tk15::angle2() const
 
 void tk15::setAngle2(double angle2)
 {
+    if(m_angle2 == angle2) return;
     m_angle2 = angle2;
     emit angle2Changed();
 }
@@ -497,6 +545,7 @@ double tk15::angle1() const
 
 void tk15::setAngle1(double angle1)
 {
+    if(m_angle1 == angle1) return;
     m_angle1 = angle1;
     emit angle1Changed();
 }
@@ -509,6 +558,7 @@ double tk15::pressure() const
 
 void tk15::setPressure(double pressure)
 {
+    if(m_pressure == pressure) return;
     m_pressure = pressure;
     emit pressureChanged();
 }
@@ -520,6 +570,7 @@ double tk15::temperature() const
 
 void tk15::setTemperature(double temperature)
 {
+    if( m_temperature == temperature) return;
     m_temperature = temperature;
-    emit temperatureChanged();
+    //emit temperatureChanged();
 }

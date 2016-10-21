@@ -12,6 +12,7 @@ class tk15 : public QQuickItem
     Q_OBJECT
     Q_PROPERTY(QString address READ address WRITE setAddress NOTIFY addressChanged)
     Q_PROPERTY(int port READ port WRITE setPort NOTIFY portChanged)
+    Q_PROPERTY(long count READ count WRITE setCount NOTIFY countChanged)
     Q_PROPERTY(QString data READ data WRITE setData NOTIFY dataChanged)
     Q_PROPERTY(QStringList list READ list NOTIFY listChanged)
 
@@ -118,6 +119,9 @@ public:
     bool tcp() const;
     void setTcp(bool tcp);
 
+    long count() const;
+    void setCount(long count);
+
 signals:
     void addressChanged();
     void portChanged();
@@ -139,6 +143,7 @@ signals:
     void client_connectedChanged();
 
     void timer_connect_intervalChanged();
+    void countChanged();
 
 public slots:
     void clientConnected();  // слот для обработки события присоединения клиента к серверу.
@@ -172,6 +177,7 @@ private:
     //TIMING
     QTimer timer_connect;
     QTimer timer_showdata;
+    long m_count=0;
     int m_timer_connect_interval=20000;
     //DATA
     QByteArray Data="";
