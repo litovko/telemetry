@@ -181,6 +181,7 @@ private:
     int m_timer_connect_interval=20000;
     //DATA
     QByteArray Data="";
+    uint16_t CRC(QByteArray data);
     double m_temperature=14;
 
     double m_pressure=109;

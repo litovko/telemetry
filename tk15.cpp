@@ -285,6 +285,9 @@ void tk15::readData()
 //        unsigned char c2=Datagramma[Datagramma.length()-2];
 //        crc0=c1*256+c2; qDebug()<<"c1:"<<c1<<" c2:"<<c2;
         crc = qChecksum(Datagramma.data(), Datagramma.length()-2);
+        //553218081708180818081808ffffffffffff ff4f
+        //5531ffffffffffffffffffffffff ff8a
+        qDebug()<<"NEW CRC:"<<CRC("553218081708180818081808ffffffffffff");
         crc0=(unsigned char)Datagramma[Datagramma.length()-1]*256+(unsigned char)Datagramma[Datagramma.length()-2]*1;
         QByteArray b=""; b.append(Datagramma[Datagramma.length()-1]).append(Datagramma[Datagramma.length()-2]);
         //qDebug()<<"crc:"<<b.toHex();
@@ -314,10 +317,7 @@ void tk15::readData()
         i=Data.indexOf(0x55);
     }
     qDebug()<<"truncated:"<<Data.toHex();
-//    fill_list();
-//    m_list.append("Данные:"+Datagramma.toHex());
-//    m_list.append("CRC:"+::QString().number(crc)+"<>"+::QString().number(crc0));
-//    emit listChanged();
+
 
 }
 
@@ -537,4 +537,25 @@ void tk15::setTemperature(double temperature)
     if( m_temperature == temperature) return;
     m_temperature = temperature;
     //emit temperatureChanged();
+}
+
+
+uint16_t tk15::CRC(QByteArray data) {
+    uint16_t crc = 0xFFFF;
+
+        for(int pos = 0; pos<data.length();pos++)
+        {
+            crc ^= (uint16_t)data.data()[pos];
+            for( int i = 8; i != 0; i--)
+            {
+                if ((crc & 0x0001) != 0) {      // LSB is set
+                    crc >>= 1;                  // Shift right
+                    crc ^= 0xA001;              // XOR 0xA001
+                }
+                else                            // LSB is not set
+                    crc >>= 1;
+            }
+
+        }
+        return crc;
 }
