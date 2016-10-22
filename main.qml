@@ -255,11 +255,13 @@ Window {
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.margins: 20
+            spacing: 20
             Rectangle {
                 width: 50
                 height: 50
                 color: "black"
                 border.color: "darkgray"
+                radius: 5
                 MyLamp {
 //                    width:  50;
 //                    height: 50;
@@ -273,6 +275,7 @@ Window {
                 height: 50
                 color: "black"
                 border.color: "darkgray"
+                radius: 5
                 Text {
                     anchors.centerIn: parent
                     color: "#e3e60f"
@@ -289,6 +292,7 @@ Window {
                 height: 50
                 color: "black"
                 border.color: "darkgray"
+                radius: 5
                 Text {
                     anchors.centerIn: parent
                     color: "#e3e60f"
