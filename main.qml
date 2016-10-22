@@ -251,59 +251,56 @@ Window {
             }
 
         }
-        Column{
-            id: c
-            //spacing: 10
-            anchors.margins:   10
-            anchors.top: panel.bottom
+        Row {
+            anchors.bottom: parent.bottom
             anchors.left: parent.left
-//            anchors.top: r.bottom
-//            anchors.left: r.left
-            property var someNumber: tk.list
-
-            Component {
-                    id: parametrstring
-                    //property string str: "null"
-                    Text
-                    {
-                        id: t
-                        Rectangle{ border.color: "#f10606";anchors.fill: parent
-                            opacity: 0.5
-                        gradient: Gradient {
-                            GradientStop {
-                                position: 0.00;
-                                color: "#cf7474";
-                            }
-                            GradientStop {
-                                position: 0.50;
-                                color: "#00aaff";
-                            }
-                            GradientStop {
-                                position: 1.00;
-                                color: "#888888";
-                            }
-                        }
-                        }
-
-                        text: qsTr("Адрес:порт: "+tk.address+":"+tk.port)
-                        color: "yellow"
-                        font.bold: true
-                        font.pointSize: 20
-
-                    }
-                }
-            onSomeNumberChanged: {
-
-                    for(var i = c.children.length; i > 0 ; i--) {
-                        //console.log("destroying: " + i)
-                        c.children[i-1].destroy()
-                      }
-                    for (i=0;i<tk.list.length;i++) {
-                      var r = parametrstring.createObject(c)
-                      r.text=tk.list[i]
-                    }
+            anchors.margins: 20
+            Rectangle {
+                width: 50
+                height: 50
+                color: "black"
+                border.color: "darkgray"
+                MyLamp {
+//                    width:  50;
+//                    height: 50;
+                    anchors.fill: parent
+                    active: tk.client_connected
+                    bottomText: "Связь"
                 }
             }
+            Rectangle {
+                width: 100
+                height: 50
+                color: "black"
+                border.color: "darkgray"
+                Text {
+                    anchors.centerIn: parent
+                    color: "#e3e60f"
+                    text: ""+tk.count
+                    font.bold: true
+
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    font.pointSize: 10
+                }
+            }
+            Rectangle {
+                width: 250
+                height: 50
+                color: "black"
+                border.color: "darkgray"
+                Text {
+                    anchors.centerIn: parent
+                    color: "#e3e60f"
+                    text:  " Адрес:"+tk.address+ " Порт:" +tk.port+ " "+(tk.tcp?"TCP":"UDP");
+                    font.bold: true
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    font.pointSize: 10
+                }
+            }
+        }
     }
+
 
 }

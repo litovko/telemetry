@@ -14,8 +14,8 @@ class tk15 : public QQuickItem
     Q_PROPERTY(int port READ port WRITE setPort NOTIFY portChanged)
     Q_PROPERTY(long count READ count WRITE setCount NOTIFY countChanged)
     Q_PROPERTY(QString data READ data WRITE setData NOTIFY dataChanged)
-    Q_PROPERTY(QStringList list READ list NOTIFY listChanged)
-
+    //Q_PROPERTY(QStringList list READ list NOTIFY listChanged)
+    Q_PROPERTY(bool tcp READ tcp NOTIFY tcpChanged)
     Q_PROPERTY(bool client_connected READ client_connected NOTIFY client_connectedChanged)
 
     Q_PROPERTY(int timer_connect_interval READ timer_connect_interval WRITE setTimer_connect_interval NOTIFY timer_connect_intervalChanged)
@@ -57,7 +57,7 @@ public:
     QString data() const;
     void setData(const QString &data);
 
-    QStringList list() const;
+    //QStringList list() const;
 
     bool client_connected() const;
     void setClient_connected(bool client_connected);
@@ -126,7 +126,7 @@ signals:
     void addressChanged();
     void portChanged();
     void dataChanged();
-    void listChanged();
+    void tcpChanged();
     void temperatureChanged();
     void pressureChanged();
     void angle1Changed();
@@ -172,7 +172,7 @@ private:
     //SETTINGS
     void saveSettings();
     void readSettings();
-    QStringList m_list;
+    //QStringList m_list;
 
     //TIMING
     QTimer timer_connect;

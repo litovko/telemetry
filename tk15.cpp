@@ -131,10 +131,10 @@ void tk15::setTimer_connect_interval(int timer_connect_interval)
     emit timer_connect_intervalChanged();
 }
 
-QStringList tk15::list() const
-{
-    return m_list;
-}
+//QStringList tk15::list() const
+//{
+//    return m_list;
+//}
 
 
 QString tk15::data() const
@@ -275,7 +275,6 @@ void tk15::readData()
         qDebug()<<"LENGTH:"<<Data.length()<<"TK15 telemetry DATA:"<<Data.toHex();
         d_type=Data.at(i+1);
 
-
         if (d_type==type_digital) Datagramma=Data.mid(i, len_digital);
         if (d_type==type_analog) Datagramma=Data.mid(i, len_analog);
 
@@ -325,42 +324,7 @@ void tk15::readData()
 void tk15::fill_list()
 {
     m_count+=1;
-    m_list.clear();m_list.clear();
-    //m_list.append("Адрес:"+m_address.toLatin1());
-    m_list.append("Адрес:"+m_address+" Порт:"+::QString().number(m_port));
-   //m_list.append();
-    m_list.append("c:"+::QString().number(m_count));
-//    m_list.append("Коррекция угла 1:"+QString().number(m_angle1k));
-//    m_list.append("Коррекция угла 2:"+QString().number(m_angle2k));
-//    m_list.append("Угол 1:"+QString().number(m_angle1));
-//    m_list.append("Угол 2:"+QString().number(m_angle2));
-//    m_list.append("Давление:"+QString().number(m_pressure));
-//    m_list.append("Ток1:"+QString().number(m_current1));
-//    m_list.append("Ток2:"+QString().number(m_current2));
-//    m_list.append("Ток3:"+QString().number(m_current3));
-//    m_list.append("Напряжение:"+QString().number(m_voltage));
-//    m_list.append("Температура:"+QString().number(m_temperature));
-//    m_list.append("Овершот1:"+QString().number(m_overshort_1));
-//    m_list.append("Овершот2:"+QString().number(m_overshort_2));
-//    m_list.append(":"); m_list.append(":"); m_list.append(":"); m_list.append(":"); m_list.append(":");
-    if(m_tcp) {
-      if (client_connected()) m_list.append("Соединение установлено");
-      if (!client_connected()) m_list.append("Соединение разорвано");
-    }
-    else m_list.append("UDP:"+QString().number(m_udpcount));
-    emit listChanged();
-    emit current1Changed();
-    emit current2Changed();
-    emit current3Changed();
-
-    emit voltageChanged();
-
-    emit angle1Changed();
-    emit angle2Changed();
-
-    emit temperatureChanged();
-    emit pressureChanged();
-
+    emit countChanged();
     qDebug()<<"c:"<<m_count<<";c1:"<<m_current1
                            <<";c2:"<<m_current2
                            <<";c3:"<<m_current3
