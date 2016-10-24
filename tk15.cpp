@@ -287,7 +287,7 @@ void tk15::readData()
         crc = qChecksum(Datagramma.data(), Datagramma.length()-2);
         //553218081708180818081808ffffffffffff ff4f
         //5531ffffffffffffffffffffffff ff8a
-        qDebug()<<"NEW CRC:"<<CRC("553218081708180818081808ffffffffffff");
+        qDebug()<<"NEW CRC:"<<CRC8(Datagramma);
         crc0=(unsigned char)Datagramma[Datagramma.length()-1]*256+(unsigned char)Datagramma[Datagramma.length()-2]*1;
         QByteArray b=""; b.append(Datagramma[Datagramma.length()-1]).append(Datagramma[Datagramma.length()-2]);
         //qDebug()<<"crc:"<<b.toHex();
@@ -540,7 +540,7 @@ void tk15::setTemperature(double temperature)
 }
 
 
-uint16_t tk15::CRC(QByteArray data) {
+uint16_t tk15::CRC16(QByteArray data) {
     uint16_t crc = 0xFFFF;
 
         for(int pos = 0; pos<data.length();pos++)
@@ -558,4 +558,17 @@ uint16_t tk15::CRC(QByteArray data) {
 
         }
         return crc;
+}
+
+uint8_t tk15::CRC8(QByteArray data)
+{
+    uint8_t crc8=0;
+    uint16_t Len=data.length();
+    for (uint16_t i=0; i<Len; i++)
+    {
+      crc8=crc8_tabl[crc8 ^ data[i]];
+      qDebug()<<QString::number ((uchar) data[i], 16)<<"=:"<<QString::number ((uchar) crc8, 16);
+
+    }
+    return crc8;
 }
