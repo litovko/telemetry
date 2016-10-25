@@ -15,7 +15,7 @@ tk15::tk15()
     connect(&timer_connect, SIGNAL(timeout()), this, SLOT(start_client()));
     connect(&timer_showdata, SIGNAL(timeout()), this, SLOT(fill_list()));
 
-    timer_showdata.start(500);
+    timer_showdata.start(m_timer_showdata_interval);
 
     if(m_tcp) {
         timer_connect.start(m_timer_connect_interval);
@@ -89,6 +89,8 @@ void tk15::saveSettings()
     settings.setValue("K_voltage",m_voltagek);
     settings.setValue("K_angle1k",m_angle1k);
     settings.setValue("K_angle2k",m_angle2k);
+    settings.setValue("Connect_interval", m_timer_connect_interval);
+    settings.setValue("Show_interval", m_timer_showdata_interval);
 
 
 }
@@ -106,7 +108,23 @@ void tk15::readSettings()
     setVoltagek(settings.value( "K_voltage", 1).toDouble());
     setAngle1k(settings.value( "K_angle1k", 0).toDouble());
     setAngle2k(settings.value( "K_angle2k", 0).toDouble());
-    qDebug()<<"tcp:"<<tcp()<<"v:"<<voltagek()<<" p:"<<pressurek()<<" c1:"<<current1k()<<" c2:"<<current2k()<<" c2:"<<current2k();
+    setTimer_connect_interval(settings.value( "Connect_interval", 20000).toInt());
+    setTimer_showdata_interval(settings.value( "Show_interval", 500).toInt());
+    qDebug()<<"tcp:"<<tcp()
+            <<"v:"<<voltagek()
+            <<" p:"<<pressurek()
+            <<" c1:"<<current1k()<<" c2:"<<current2k()<<" c2:"<<current2k()
+            <<"show:"<<m_timer_showdata_interval;
+}
+
+int tk15::timer_showdata_interval() const
+{
+    return m_timer_showdata_interval;
+}
+
+void tk15::setTimer_showdata_interval(int timer_showdata_interval)
+{
+    m_timer_showdata_interval = timer_showdata_interval;
 }
 
 long tk15::count() const
@@ -261,14 +279,14 @@ void tk15::readData()
     quint16 crc=0;
     quint16 crc0=0;
     char d_type=0;
-    int l;
+    int l=0;
 
     if (m_tcp) {
         Datagramma = tcpClient.readAll();
         Data.append(Datagramma);
     }  
     Data=Data.right(2*len_analog+2*len_digital+10);
-    //if (Data.length()>200) { Data.clear(); return;}  //большие данные просто пропускаем.
+
     int i=Data.indexOf(0x55);
 
     while (i>=0&&Data.length()>=len_digital) //(len_analog<len_digital?len_analog:len_digital)
@@ -287,17 +305,13 @@ void tk15::readData()
         }
 
         qDebug()<<"i->55="<<i<<"type:"<<d_type<<"Datagramma:"<<Datagramma.toHex();
-        //qDebug()<<"len:" <<Datagramma.length();
-        //qDebug()<<Datagramma[Datagramma.length()-1]*1;
-//        unsigned char c1=Datagramma[Datagramma.length()-1];
-//        unsigned char c2=Datagramma[Datagramma.length()-2];
-//        crc0=c1*256+c2; qDebug()<<"c1:"<<c1<<" c2:"<<c2;
+
         crc = CRC16(Datagramma.mid(2, Datagramma.length()-2));
         //553218081708180818081808ffffffffffff ff4f
         //5531ffffffffffffffffffffffff ff8a
         //qDebug()<<"NEW CRC:"<<CRC8(Datagramma);
         crc0=(unsigned char)Datagramma[Datagramma.length()-1]*256+(unsigned char)Datagramma[Datagramma.length()-2]*1;
-        QByteArray b=""; b.append(Datagramma[Datagramma.length()-1]).append(Datagramma[Datagramma.length()-2]);
+        //QByteArray b=""; b.append(Datagramma[Datagramma.length()-1]).append(Datagramma[Datagramma.length()-2]);
         //qDebug()<<"crc:"<<b.toHex();
         qDebug()<<"crc0 :"<<::QString().number(crc0)<<"SRC :"<<::QString().number(crc);
         qDebug()<<"Datagramma->:"<<Datagramma.toHex();
@@ -310,6 +324,7 @@ void tk15::readData()
 
             setAngle1(-angle1k()+(Datagramma.at(5)|Datagramma.at(6)<<8));
             setAngle2(-angle2k()+(Datagramma.at(7)|Datagramma.at(8)<<8));
+            m_count+=1;
 
         }
         if(d_type==type_analog&&Datagramma.length()>=len_analog) {
@@ -322,12 +337,13 @@ void tk15::readData()
             setCurrent3(current3k()*(Datagramma.at(8)|Datagramma.at(9)<<8));
 
             setPressure(pressurek()*(Datagramma.at(10)|Datagramma.at(11)<<8));
+            m_count+=1;
 
         }
         l=d_type==type_digital?len_digital:len_analog;
         Data=Data.mid(i+l, Data.length());
         i=Data.indexOf(0x55);
-    }
+    }//end while
     qDebug()<<"truncated:"<<Data.toHex();
 
 

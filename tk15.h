@@ -122,6 +122,9 @@ public:
     long count() const;
     void setCount(long count);
 
+    int timer_showdata_interval() const;
+    void setTimer_showdata_interval(int timer_showdata_interval);
+
 signals:
     void addressChanged();
     void portChanged();
@@ -179,6 +182,7 @@ private:
     QTimer timer_showdata;
     long m_count=0;
     int m_timer_connect_interval=20000;
+    int m_timer_showdata_interval=500;
     //DATA
     QByteArray Data="";
     uint16_t CRC16(QByteArray data);
