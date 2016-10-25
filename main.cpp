@@ -51,6 +51,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
         abort();
     }
     if(logfile.isOpen()) logfile.flush();
+    if(logfile.isOpen()) logfile.flush();
 }
 
 int main(int argc, char *argv[])

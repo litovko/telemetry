@@ -261,12 +261,13 @@ void tk15::readData()
     quint16 crc=0;
     quint16 crc0=0;
     char d_type=0;
+    int l;
 
     if (m_tcp) {
         Datagramma = tcpClient.readAll();
         Data.append(Datagramma);
     }  
-    Data=Data.right(len_analog+len_digital+10);
+    Data=Data.right(2*len_analog+2*len_digital+10);
     //if (Data.length()>200) { Data.clear(); return;}  //большие данные просто пропускаем.
     int i=Data.indexOf(0x55);
 
@@ -275,27 +276,33 @@ void tk15::readData()
         qDebug()<<"LENGTH:"<<Data.length()<<"TK15 telemetry DATA:"<<Data.toHex();
         d_type=Data.at(i+1);
 
-        if (d_type==type_digital) Datagramma=Data.mid(i, len_digital);
-        if (d_type==type_analog) Datagramma=Data.mid(i, len_analog);
 
-        qDebug()<<"i->55="<<i<<"type:"<<d_type<<"Datagramma:"<<Datagramma.mid(0,Datagramma.length()-2).toHex();
+        if (d_type==type_digital) {
+            Datagramma=Data.mid(i, len_digital);
+            if (Datagramma.length()<len_digital) break;
+        }
+        if (d_type==type_analog)  {
+            Datagramma=Data.mid(i, len_analog);
+            if (Datagramma.length()<len_digital) break;
+        }
+
+        qDebug()<<"i->55="<<i<<"type:"<<d_type<<"Datagramma:"<<Datagramma.toHex();
         //qDebug()<<"len:" <<Datagramma.length();
         //qDebug()<<Datagramma[Datagramma.length()-1]*1;
 //        unsigned char c1=Datagramma[Datagramma.length()-1];
 //        unsigned char c2=Datagramma[Datagramma.length()-2];
 //        crc0=c1*256+c2; qDebug()<<"c1:"<<c1<<" c2:"<<c2;
-        crc = qChecksum(Datagramma.data(), Datagramma.length()-2);
+        crc = CRC16(Datagramma.mid(2, Datagramma.length()-2));
         //553218081708180818081808ffffffffffff ff4f
         //5531ffffffffffffffffffffffff ff8a
-        qDebug()<<"NEW CRC:"<<CRC8(Datagramma);
+        //qDebug()<<"NEW CRC:"<<CRC8(Datagramma);
         crc0=(unsigned char)Datagramma[Datagramma.length()-1]*256+(unsigned char)Datagramma[Datagramma.length()-2]*1;
         QByteArray b=""; b.append(Datagramma[Datagramma.length()-1]).append(Datagramma[Datagramma.length()-2]);
         //qDebug()<<"crc:"<<b.toHex();
         qDebug()<<"crc0 :"<<::QString().number(crc0)<<"SRC :"<<::QString().number(crc);
         qDebug()<<"Datagramma->:"<<Datagramma.toHex();
 
-        if(d_type==type_digital) {
-            Data=Data.mid(i+len_digital, Data.length());
+        if(d_type==type_digital&&Datagramma.length()>=len_digital) {
             setOvershort_1(Datagramma.at(2)^1);
             setOvershort_2(Datagramma.at(2)^2);
 
@@ -303,9 +310,11 @@ void tk15::readData()
 
             setAngle1(-angle1k()+(Datagramma.at(5)|Datagramma.at(6)<<8));
             setAngle2(-angle2k()+(Datagramma.at(7)|Datagramma.at(8)<<8));
+
         }
-        if(d_type==type_analog) {
-            Data=Data.mid(i+len_analog, Data.length());
+        if(d_type==type_analog&&Datagramma.length()>=len_analog) {
+
+
             setVoltage(voltagek()*(Datagramma.at(2)|Datagramma.at(3)<<8));
 
             setCurrent1(current1k()*(Datagramma.at(4)|Datagramma.at(5)<<8));
@@ -313,7 +322,10 @@ void tk15::readData()
             setCurrent3(current3k()*(Datagramma.at(8)|Datagramma.at(9)<<8));
 
             setPressure(pressurek()*(Datagramma.at(10)|Datagramma.at(11)<<8));
+
         }
+        l=d_type==type_digital?len_digital:len_analog;
+        Data=Data.mid(i+l, Data.length());
         i=Data.indexOf(0x55);
     }
     qDebug()<<"truncated:"<<Data.toHex();
