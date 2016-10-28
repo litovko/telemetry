@@ -250,13 +250,13 @@ void tk15::setTcp(bool tcp)
 байта	НЕХ
 1	55	Стартовый
 2	32	Код
-3	хх	Байт 1	Содержание
-4	хх	Байт 2	байтов на листе
-5	хх	Байт 3	 "Протокол"
-6	хх	Байт 4	строки
-7	хх	Байт 5	 360 - 370
-8	хх	Байт 6
-9	хх	Байт 7
+3	хх	Байт 1	Овершоты - младшие биты 1 и 2
+4	хх	Байт 2	Температура мл
+5	хх	Байт 3	Температура ст
+6	хх	Байт 4	угол ст
+7	хх	Байт 5	угол мл
+8	хх	Байт 6  угол ст
+9	хх	Байт 7  угол мл
 10	хх	Байт 8
 11	хх	Байт 9
 12	хх	Байт 10
@@ -322,8 +322,10 @@ void tk15::readData()
 
             setTemperature(Datagramma.at(3)|Datagramma.at(4)<<8);
 
-            setAngle1(-angle1k()+(Datagramma.at(5)|Datagramma.at(6)<<8));
-            setAngle2(-angle2k()+(Datagramma.at(7)|Datagramma.at(8)<<8));
+//            setAngle1(-angle1k()+(Datagramma.at(5)|Datagramma.at(6)<<8));
+//            setAngle2(-angle2k()+(Datagramma.at(7)|Datagramma.at(8)<<8));
+            setAngle1(-angle1k()+(Datagramma.at(6)|Datagramma.at(5)<<8));
+            setAngle2(-angle2k()+(Datagramma.at(8)|Datagramma.at(7)<<8));
             m_count+=1;
 
         }
