@@ -327,11 +327,11 @@ void tk15::readData()
 
         qDebug()<<"i->55="<<i<<"type:"<<d_type<<"Datagramma:"<<Datagramma.toHex();
 
-        crc = CRC16(Datagramma.mid(2, Datagramma.length()-2));
+        crc = CRC8(Datagramma.left(Datagramma.length()-2));
         //553218081708180818081808ffffffffffff ff4f
         //5531ffffffffffffffffffffffff ff8a
         //qDebug()<<"NEW CRC:"<<CRC8(Datagramma);
-        crc0=(unsigned char)Datagramma[Datagramma.length()-1]*256+(unsigned char)Datagramma[Datagramma.length()-2]*1;
+        crc0=(unsigned char)Datagramma[Datagramma.length()-1];
         //QByteArray b=""; b.append(Datagramma[Datagramma.length()-1]).append(Datagramma[Datagramma.length()-2]);
         //qDebug()<<"crc:"<<b.toHex();
         qDebug()<<"crc0 :"<<::QString().number(crc0)<<"SRC :"<<::QString().number(crc);
@@ -616,10 +616,11 @@ uint8_t tk15::CRC8(QByteArray data)
 {
     uint8_t crc8=0;
     uint16_t Len=data.length();
+    qDebug()<<"CRC Data:"<<data.toHex();
     for (uint16_t i=0; i<Len; i++)
     {
       crc8=crc8_tabl[crc8 ^ data[i]];
-      qDebug()<<QString::number ((uchar) data[i], 16)<<"=:"<<QString::number ((uchar) crc8, 16);
+      //qDebug()<<QString::number ((uchar) data[i], 16)<<"=:"<<QString::number ((uchar) crc8, 16);
 
     }
     return crc8;
