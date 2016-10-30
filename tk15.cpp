@@ -4,6 +4,8 @@
 #include <QDebug>
 #include <QTimer>
 
+extern void toggle_log(bool recordlog);
+
 tk15::tk15()
 {
     qDebug()<<"Конструктор класса ТК15";
@@ -28,6 +30,7 @@ tk15::tk15()
         //UDP
         connect(m_client, SIGNAL(readyRead()), SLOT(onClientReadyRead()));
     }
+
 
 
 }
@@ -205,10 +208,17 @@ void tk15::onClientReadyRead()
     QHostAddress sender;
     quint16 senderPort;
     QByteArray datagram;
+    try {
     datagram.resize(m_client->pendingDatagramSize());
     m_client->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
     //setData(datagram);
     Data.append(datagram);
+    setClient_connected(true);
+    }
+    catch (...) {
+        qDebug()<<"ERROR READ DATA FROM UDP";
+    }
+
     qDebug()<<"UDP Datagram["<<datagram<<"] from addr:"<<sender<<"port:"<<senderPort;
     readData();
     m_udpcount+=1;
@@ -282,8 +292,19 @@ void tk15::readData()
     int l=0;
 
     if (m_tcp) {
-        Datagramma = tcpClient.readAll();
-        Data.append(Datagramma);
+        try {
+            Datagramma = tcpClient.readAll();
+        }
+        catch (...) {
+            qDebug()<< "ERROR tcpClient.readAll";
+        }
+        try {
+            Data.append(Datagramma);
+        }
+        catch (...) {
+            qDebug()<< "ERROR Data.append(Datagramma)";
+        }
+
     }  
     Data=Data.right(2*len_analog+2*len_digital+10);
 
@@ -320,7 +341,7 @@ void tk15::readData()
             setOvershort_1(Datagramma.at(2)^1);
             setOvershort_2(Datagramma.at(2)^2);
 
-            setTemperature(Datagramma.at(3)|Datagramma.at(4)<<8);
+            setTemperature((Datagramma.at(3)|Datagramma.at(4)<<8)*0.065);
 
 //            setAngle1(-angle1k()+(Datagramma.at(5)|Datagramma.at(6)<<8));
 //            setAngle2(-angle2k()+(Datagramma.at(7)|Datagramma.at(8)<<8));
@@ -363,6 +384,7 @@ void tk15::fill_list()
                            <<";a2:"<<m_angle2
                            <<";t1:"<<m_temperature
                            <<";p1:"<<m_pressure;
+    if (!m_tcp) setClient_connected(false);
 }
 
 double tk15::angle2k() const
@@ -566,7 +588,7 @@ void tk15::setTemperature(double temperature)
 {
     if( m_temperature == temperature) return;
     m_temperature = temperature;
-    //emit temperatureChanged();
+    emit temperatureChanged();
 }
 
 

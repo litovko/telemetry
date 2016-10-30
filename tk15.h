@@ -186,18 +186,18 @@ private:
     //DATA
     QByteArray Data="";
     uint16_t CRC16(QByteArray data);
-    double m_temperature=14;
+    double m_temperature=0;
 
-    double m_pressure=109;
+    double m_pressure=0;
     double m_pressurek=1.5;
-    double m_angle1=1;
-    double m_angle2=3;
+    double m_angle1=0;
+    double m_angle2=0;
     double m_angle1k=0;
     double m_angle2k=0;
-    double m_current1=20;
-    double m_current2=17;
-    double m_current3=19;
-    double m_voltage=408;
+    double m_current1=0;
+    double m_current2=0;
+    double m_current3=0;
+    double m_voltage=0;
     double m_current1k=1;
     double m_current2k=1;
     double m_current3k=1;

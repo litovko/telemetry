@@ -12,7 +12,7 @@ static QFile logfile;
 static QTextStream out(&logfile);
 static bool recordinglog=false;
 
-extern void toggle_log(bool recordlog) {
+extern void toggle_log(bool recordlog) {  //false - закрыть файл; true - открыть.
     if (!recordlog) {
         if(logfile.isOpen()) {
             logfile.write("Close\n");
@@ -52,6 +52,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
     }
     if(logfile.isOpen()) logfile.flush();
     if(logfile.isOpen()) logfile.flush();
+
 }
 
 int main(int argc, char *argv[])
@@ -71,13 +72,11 @@ int main(int argc, char *argv[])
     try {
         ret = app.exec();
     }
-    catch (const std::bad_alloc &) {
+    catch (const std::exception &e) {
         // clean up here, e.g. save the session
         // and close all config files.
-        if(logfile.isOpen()) {
-            logfile.flush();
-            logfile.close();
-        }
+        qDebug()<< "ERROR IN PROGRAM";
+        toggle_log(false); //закрываем файл лога
 
         return 0; // exit the application
     }
