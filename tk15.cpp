@@ -31,7 +31,7 @@ tk15::tk15()
         connect(m_client, SIGNAL(readyRead()), SLOT(onClientReadyRead()));
     }
 
-
+    //qDebug()<<"START CRC8:"<<"U11234567890"<<CRC8("U11234567890");
 
 }
 
@@ -613,6 +613,8 @@ uint16_t tk15::CRC16(QByteArray data) {
 }
 
 uint8_t tk15::CRC8(QByteArray data)
+//calculating checksum according to Dallas/Maxim Application Note 27
+//(polynomial X^8+X^5+X^4+X^0), that is as used by 1-wire protocol.
 {
     uint8_t crc8=0;
     uint16_t Len=data.length();
