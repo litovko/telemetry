@@ -56,6 +56,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 
 int main(int argc, char *argv[])
 {
+    int ret;
     qInstallMessageHandler(myMessageOutput);
     toggle_log(true);
     setlocale(LC_ALL, ""); // избавляемся от кракозябров в консоли
@@ -67,8 +68,20 @@ int main(int argc, char *argv[])
     qmlRegisterType<tk15>("Gyco", 1, 0, "TK15");
     QQmlApplicationEngine engine;
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+    try {
+        ret = app.exec();
+    }
+    catch (const std::bad_alloc &) {
+        // clean up here, e.g. save the session
+        // and close all config files.
+        if(logfile.isOpen()) {
+            logfile.flush();
+            logfile.close();
+        }
 
-    return app.exec();
+        return 0; // exit the application
+    }
     qDebug()<<QTime::currentTime().toString("hh:mm:ss:zzz ")<<"Стоп"<<giko_name<<"  "<<giko_program;
     toggle_log(false);
+    return ret;
 }
