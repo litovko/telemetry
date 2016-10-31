@@ -333,7 +333,9 @@ void tk15::readData()
         }
         else {
             Data=Data.mid(i+1);
-            break;
+            i=Data.indexOf(0x55);
+            qDebug()<<"WRONG Datagramma type:"<<(int)d_type;
+            continue;
         }
 
         qDebug()<<"i->55="<<i<<"type:"<<d_type<<"Datagramma:"<<Datagramma.toHex();
