@@ -3,6 +3,7 @@
 #include <QSettings>
 #include <QDebug>
 #include <QTimer>
+#include <QTMath>
 
 extern void toggle_log(bool recordlog);
 
@@ -219,8 +220,13 @@ void tk15::onClientReadyRead()
         qDebug()<<"ERROR READ DATA FROM UDP";
     }
 
-    qDebug()<<"UDP Datagram["<<datagram<<"] from addr:"<<sender<<"port:"<<senderPort;
+    qDebug()<<"UDP Datagram["<<datagram.toHex()<<"] from addr:"<<sender<<"port:"<<senderPort;
+    try {
     readData();
+    }
+    catch (...) {
+        qDebug()<<"ERROR READED DATA PROCESSING";
+    }
     m_udpcount+=1;
 }
 
@@ -290,6 +296,7 @@ void tk15::readData()
     quint16 crc0=0;
     char d_type=0;
     int l=0;
+    double ang;
 
     if (m_tcp) {
         try {
@@ -324,6 +331,10 @@ void tk15::readData()
             Datagramma=Data.mid(i, len_analog);
             if (Datagramma.length()<len_digital) break;
         }
+        else {
+            Data=Data.mid(i+1);
+            break;
+        }
 
         qDebug()<<"i->55="<<i<<"type:"<<d_type<<"Datagramma:"<<Datagramma.toHex();
 
@@ -338,28 +349,40 @@ void tk15::readData()
         qDebug()<<"Datagramma->:"<<Datagramma.toHex();
 
         if(d_type==type_digital&&Datagramma.length()>=len_digital) {
-            setOvershort_1(Datagramma.at(2)^1);
-            setOvershort_2(Datagramma.at(2)^2);
+            setOvershort_1(!Datagramma.at(2)^1);
+            setOvershort_2(!Datagramma.at(2)^2);
 
-            setTemperature((Datagramma.at(3)|Datagramma.at(4)<<8)*0.065);
+            setTemperature(bytes2double(Datagramma.at(4), Datagramma.at(3))*0.065);  //коэффициент для цифрового датчика
 
 //            setAngle1(-angle1k()+(Datagramma.at(5)|Datagramma.at(6)<<8));
 //            setAngle2(-angle2k()+(Datagramma.at(7)|Datagramma.at(8)<<8));
-            setAngle1(-angle1k()+(Datagramma.at(6)|Datagramma.at(5)<<8));
-            setAngle2(-angle2k()+(Datagramma.at(8)|Datagramma.at(7)<<8));
+            //"5531ff3601 07ff 07f0 0000000000"
+//            qDebug()<<"D:"<<(unsigned char)Datagramma.at(6)<<"St:"<<(unsigned char)Datagramma.at(5)*256;
+//            ang=((unsigned char)Datagramma.at(6)+(unsigned char)Datagramma.at(5)*256-2048);
+//            qDebug()<<"ang:"<<ang;
+//            ang=(double)((unsigned char)Datagramma.at(6)+(unsigned char)Datagramma.at(5)*256-2048)/512;
+//            qDebug()<<"ang:"<<ang;
+//            ang=qAsin(ang);
+//            qDebug()<<"ang:"<<ang;
+//            ang=qRadiansToDegrees(ang);
+//            qDebug()<<"ang:"<<ang;
+            setAngle1(-angle1k()+qRadiansToDegrees(qAsin( ( (double)((unsigned char)Datagramma.at(6)+(unsigned char)Datagramma.at(5)*256-2048)/512))));
+            setAngle2(-angle2k()+qRadiansToDegrees(qAsin( ( (double)((unsigned char)Datagramma.at(8)+(unsigned char)Datagramma.at(7)*256-2048)/512))));
+
             m_count+=1;
 
         }
         if(d_type==type_analog&&Datagramma.length()>=len_analog) {
 
 
-            setVoltage(voltagek()*(Datagramma.at(2)|Datagramma.at(3)<<8));
+            setVoltage(voltagek()*bytes2double(Datagramma.at(3), Datagramma.at(2)));
 
-            setCurrent1(current1k()*(Datagramma.at(4)|Datagramma.at(5)<<8));
-            setCurrent2(current2k()*(Datagramma.at(6)|Datagramma.at(7)<<8));
-            setCurrent3(current3k()*(Datagramma.at(8)|Datagramma.at(9)<<8));
 
-            setPressure(pressurek()*(Datagramma.at(10)|Datagramma.at(11)<<8));
+            setCurrent1(current1k()*(bytes2double(Datagramma.at(5), Datagramma.at(4))));
+            setCurrent2(current2k()*(bytes2double(Datagramma.at(7), Datagramma.at(6))));
+            setCurrent3(current3k()*(bytes2double(Datagramma.at(9), Datagramma.at(8))));
+
+            setPressure(pressurek()*(bytes2double(Datagramma.at(11), Datagramma.at(10))));
             m_count+=1;
 
         }
@@ -612,6 +635,11 @@ uint16_t tk15::CRC16(QByteArray data) {
         return crc;
 }
 
+double tk15::bytes2double(const unsigned char bst, const unsigned char bml)
+{
+    return (double)bst*256+bml;
+}
+
 uint8_t tk15::CRC8(QByteArray data)
 //calculating checksum according to Dallas/Maxim Application Note 27
 //(polynomial X^8+X^5+X^4+X^0), that is as used by 1-wire protocol.
@@ -619,11 +647,17 @@ uint8_t tk15::CRC8(QByteArray data)
     uint8_t crc8=0;
     uint16_t Len=data.length();
     qDebug()<<"CRC Data:"<<data.toHex();
+    try {
     for (uint16_t i=0; i<Len; i++)
     {
       crc8=crc8_tabl[crc8 ^ data[i]];
       //qDebug()<<QString::number ((uchar) data[i], 16)<<"=:"<<QString::number ((uchar) crc8, 16);
 
     }
+    }
+    catch (...) {
+        qDebug()<<"CRC calc error Len:"<<Len;
+    }
+
     return crc8;
 }

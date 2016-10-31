@@ -186,6 +186,7 @@ private:
     //DATA
     QByteArray Data="";
     uint16_t CRC16(QByteArray data);
+    double bytes2double(const unsigned char bst, const unsigned char bml);
     double m_temperature=0;
 
     double m_pressure=0;
