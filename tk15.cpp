@@ -220,7 +220,7 @@ void tk15::onClientReadyRead()
         qDebug()<<"ERROR READ DATA FROM UDP";
     }
 
-    qDebug()<<"UDP Datagram["<<datagram.toHex()<<"] from addr:"<<sender<<"port:"<<senderPort;
+    //qDebug()<<"UDP Datagram["<<datagram.toHex()<<"] from addr:"<<sender<<"port:"<<senderPort;
     try {
     readData();
     }
@@ -245,13 +245,13 @@ void tk15::setTcp(bool tcp)
 байта	НЕХ
 1	55	Стартовый
 2	31	Код
-3	хх	Байт 1	Содержание
-4	хх	Байт 2	байтов на листе
-5	хх	Байт 3	 "Протокол"
-6	хх	Байт 4	строки
-7	хх	Байт 5	 284 - 295
-8	хх	Байт 6
-9	хх	Байт 7
+3	хх	Байт 1	Овершоты - младшие биты 1 и 2
+4	хх	Байт 2	Температура мл
+5	хх	Байт 3	Температура ст
+6	хх	Байт 4	угол ст (угол в радианах =ASIN(Data-2048)/512))
+7	хх	Байт 5	угол мл
+8	хх	Байт 6  угол ст
+9	хх	Байт 7  угол мл
 10	хх	Байт 8
 11	хх	Байт 9
 12	00	Резерв
@@ -266,7 +266,7 @@ void tk15::setTcp(bool tcp)
 байта	НЕХ
 1	55	Стартовый
 2	32	Код
-3	хх	Байт 1	Овершоты - младшие биты 1 и 2
+3	хх	Байт 1
 4	хх	Байт 2	Температура мл
 5	хх	Байт 3	Температура ст
 6	хх	Байт 4	угол ст
@@ -327,47 +327,37 @@ void tk15::readData()
             Datagramma=Data.mid(i, len_digital);
             if (Datagramma.length()<len_digital) break;
         }
-        if (d_type==type_analog)  {
-            Datagramma=Data.mid(i, len_analog);
-            if (Datagramma.length()<len_digital) break;
-        }
-        else {
-            Data=Data.mid(i+1);
-            i=Data.indexOf(0x55);
-            qDebug()<<"WRONG Datagramma type:"<<(int)d_type;
-            continue;
-        }
+        else if (d_type==type_analog)  {
+                Datagramma=Data.mid(i, len_analog);
+                if (Datagramma.length()<len_digital) break;
+             }
+             else {
+                Data=Data.mid(i+1);
+                i=Data.indexOf(0x55);
+                qDebug()<<"WRONG Datagramma type:"<<(int)d_type;
+                continue;
+             }
 
         qDebug()<<"i->55="<<i<<"type:"<<d_type<<"Datagramma:"<<Datagramma.toHex();
 
         crc = CRC8(Datagramma.left(Datagramma.length()-2));
-        //553218081708180818081808ffffffffffff ff4f
-        //5531ffffffffffffffffffffffff ff8a
-        //qDebug()<<"NEW CRC:"<<CRC8(Datagramma);
         crc0=(unsigned char)Datagramma[Datagramma.length()-1];
-        //QByteArray b=""; b.append(Datagramma[Datagramma.length()-1]).append(Datagramma[Datagramma.length()-2]);
-        //qDebug()<<"crc:"<<b.toHex();
         qDebug()<<"crc0 :"<<::QString().number(crc0)<<"SRC :"<<::QString().number(crc);
-        qDebug()<<"Datagramma->:"<<Datagramma.toHex();
+        //qDebug()<<"Datagramma->:"<<Datagramma.toHex();
+        if (crc0!=crc&& d_type==type_digital)
+        {
+            Data=Data.mid(i+1);
+            i=Data.indexOf(0x55);
+            qDebug()<<"WRONG CRC:"<<"DTYPE:"<<(int)d_type<<"crc0 :"<<::QString().number(crc0)<<"SRC :"<<::QString().number(crc);;
+            continue;
+        }
 
         if(d_type==type_digital&&Datagramma.length()>=len_digital) {
-            setOvershort_1(!Datagramma.at(2)^1);
-            setOvershort_2(!Datagramma.at(2)^2);
+            setOvershort_1(!(Datagramma.at(2)&1));
+            setOvershort_2(!(Datagramma.at(2)&2));
 
             setTemperature(bytes2double(Datagramma.at(4), Datagramma.at(3))*0.065);  //коэффициент для цифрового датчика
 
-//            setAngle1(-angle1k()+(Datagramma.at(5)|Datagramma.at(6)<<8));
-//            setAngle2(-angle2k()+(Datagramma.at(7)|Datagramma.at(8)<<8));
-            //"5531ff3601 07ff 07f0 0000000000"
-//            qDebug()<<"D:"<<(unsigned char)Datagramma.at(6)<<"St:"<<(unsigned char)Datagramma.at(5)*256;
-//            ang=((unsigned char)Datagramma.at(6)+(unsigned char)Datagramma.at(5)*256-2048);
-//            qDebug()<<"ang:"<<ang;
-//            ang=(double)((unsigned char)Datagramma.at(6)+(unsigned char)Datagramma.at(5)*256-2048)/512;
-//            qDebug()<<"ang:"<<ang;
-//            ang=qAsin(ang);
-//            qDebug()<<"ang:"<<ang;
-//            ang=qRadiansToDegrees(ang);
-//            qDebug()<<"ang:"<<ang;
             setAngle1(-angle1k()+qRadiansToDegrees(qAsin( ( (double)((unsigned char)Datagramma.at(6)+(unsigned char)Datagramma.at(5)*256-2048)/512))));
             setAngle2(-angle2k()+qRadiansToDegrees(qAsin( ( (double)((unsigned char)Datagramma.at(8)+(unsigned char)Datagramma.at(7)*256-2048)/512))));
 
@@ -648,11 +638,11 @@ uint8_t tk15::CRC8(QByteArray data)
 {
     uint8_t crc8=0;
     uint16_t Len=data.length();
-    qDebug()<<"CRC Data:"<<data.toHex();
+    //qDebug()<<"CRC Data:"<<data.toHex();
     try {
     for (uint16_t i=0; i<Len; i++)
     {
-      crc8=crc8_tabl[crc8 ^ data[i]];
+      crc8=crc8_tabl[crc8 ^ (uint8_t)data[i]];
       //qDebug()<<QString::number ((uchar) data[i], 16)<<"=:"<<QString::number ((uchar) crc8, 16);
 
     }
