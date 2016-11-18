@@ -106,11 +106,11 @@ void tk15::readSettings()
     setAddress(settings.value("Address","192.168.1.168").toString());
     setPort(settings.value("Port", 9999).toInt());
     setTcp(settings.value("TCP", true).toBool());
-    setPressurek(settings.value("K_pressure",1).toDouble());
-    setCurrent1k(settings.value("K_current1",1).toDouble());
-    setCurrent2k(settings.value("K_current2",1).toDouble());
-    setCurrent3k(settings.value("K_current3",1).toDouble());
-    setVoltagek(settings.value( "K_voltage", 1).toDouble());
+    setPressurek(settings.value("K_pressure",0.0009375).toDouble());
+    setCurrent1k(settings.value("K_current1",0.0009375).toDouble());
+    setCurrent2k(settings.value("K_current2",0.0009375).toDouble());
+    setCurrent3k(settings.value("K_current3",0.0009375).toDouble());
+    setVoltagek(settings.value( "K_voltage", 0.0009375).toDouble());
     setAngle1k(settings.value( "K_angle1k", 0).toDouble());
     setAngle2k(settings.value( "K_angle2k", 0).toDouble());
     setShift(settings.value( "K_shift", 2048).toDouble());
