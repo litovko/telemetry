@@ -125,6 +125,9 @@ public:
     int timer_showdata_interval() const;
     void setTimer_showdata_interval(int timer_showdata_interval);
 
+    double shift() const;
+    void setShift(double shift);
+
 signals:
     void addressChanged();
     void portChanged();
@@ -190,7 +193,7 @@ private:
     double m_temperature=0;
 
     double m_pressure=0;
-    double m_pressurek=1.5;
+    double m_pressurek=0.0009375;
     double m_angle1=0;
     double m_angle2=0;
     double m_angle1k=0;
@@ -199,10 +202,11 @@ private:
     double m_current2=0;
     double m_current3=0;
     double m_voltage=0;
-    double m_current1k=1;
-    double m_current2k=1;
-    double m_current3k=1;
-    double m_voltagek=1;
+    double m_current1k=0.0009375;
+    double m_current2k=0.0009375;
+    double m_current3k=0.0009375;
+    double m_voltagek=0.0009375;
+    double m_shift=2048; //ноль для цифрового сигнала - 2048 середина диапазона измерения
     bool m_overshort_1=false;
     bool m_overshort_2=false;
 

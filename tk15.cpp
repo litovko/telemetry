@@ -93,6 +93,7 @@ void tk15::saveSettings()
     settings.setValue("K_voltage",m_voltagek);
     settings.setValue("K_angle1k",m_angle1k);
     settings.setValue("K_angle2k",m_angle2k);
+    settings.setValue("K_shift",m_shift);
     settings.setValue("Connect_interval", m_timer_connect_interval);
     settings.setValue("Show_interval", m_timer_showdata_interval);
 
@@ -112,6 +113,7 @@ void tk15::readSettings()
     setVoltagek(settings.value( "K_voltage", 1).toDouble());
     setAngle1k(settings.value( "K_angle1k", 0).toDouble());
     setAngle2k(settings.value( "K_angle2k", 0).toDouble());
+    setShift(settings.value( "K_shift", 2048).toDouble());
     setTimer_connect_interval(settings.value( "Connect_interval", 20000).toInt());
     setTimer_showdata_interval(settings.value( "Show_interval", 500).toInt());
     qDebug()<<"tcp:"<<tcp()
@@ -344,7 +346,7 @@ void tk15::readData()
         crc0=(unsigned char)Datagramma[Datagramma.length()-1];
         qDebug()<<"crc0 :"<<::QString().number(crc0)<<"SRC :"<<::QString().number(crc);
         //qDebug()<<"Datagramma->:"<<Datagramma.toHex();
-        if (crc0!=crc&& d_type==type_digital)
+        if (crc0!=crc) //&& d_type==type_digital
         {
             Data=Data.mid(i+1);
             i=Data.indexOf(0x55);
@@ -629,7 +631,17 @@ uint16_t tk15::CRC16(QByteArray data) {
 
 double tk15::bytes2double(const unsigned char bst, const unsigned char bml)
 {
-    return (double)bst*256+bml;
+    return (double)bst*256+bml-m_shift;
+}
+
+double tk15::shift() const
+{
+    return m_shift;
+}
+
+void tk15::setShift(double shift)
+{
+    m_shift = shift;
 }
 
 uint8_t tk15::CRC8(QByteArray data)
