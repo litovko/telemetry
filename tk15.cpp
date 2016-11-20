@@ -38,7 +38,7 @@ tk15::tk15()
 
 tk15::~tk15()
 {
-    //saveSettings();
+    saveSettings();
     qDebug()<<"Деструктор класса ТК15";
     if(!m_tcp) delete m_client;
 }
@@ -94,6 +94,7 @@ void tk15::saveSettings()
     settings.setValue("K_angle1k",m_angle1k);
     settings.setValue("K_angle2k",m_angle2k);
     settings.setValue("K_shift",m_shift);
+    settings.setValue("P_shift",m_shift_pressure);
     settings.setValue("Connect_interval", m_timer_connect_interval);
     settings.setValue("Show_interval", m_timer_showdata_interval);
 
@@ -114,7 +115,7 @@ void tk15::readSettings()
     setAngle1k(settings.value( "K_angle1k", 0).toDouble());
     setAngle2k(settings.value( "K_angle2k", 0).toDouble());
     setShift(settings.value( "K_shift", 2048).toDouble());
-    setShift_pressure(settings.value( "K_shift", 2048+850).toDouble());
+    setShift_pressure(settings.value( "P_shift", 2048+850).toDouble());
     setTimer_connect_interval(settings.value( "Connect_interval", 20000).toInt());
     setTimer_showdata_interval(settings.value( "Show_interval", 500).toInt());
     qDebug()<<"tcp:"<<tcp()
