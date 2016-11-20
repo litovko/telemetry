@@ -128,6 +128,9 @@ public:
     double shift() const;
     void setShift(double shift);
 
+    double shift_pressure() const;
+    void setShift_pressure(double shift_pressure);
+
 signals:
     void addressChanged();
     void portChanged();
@@ -189,7 +192,7 @@ private:
     //DATA
     QByteArray Data="";
     uint16_t CRC16(QByteArray data);
-    double bytes2double(const unsigned char bst, const unsigned char bml);
+    double bytes2double(const unsigned char bst, const unsigned char bml, const int shift );
     double m_temperature=0;
 
     double m_pressure=0;
@@ -207,6 +210,7 @@ private:
     double m_current3k=0.0009375;
     double m_voltagek=0.0009375;
     double m_shift=2048; //ноль для цифрового сигнала - 2048 середина диапазона измерения
+    double m_shift_pressure=2048; //ноль для цифрового сигнала - 2048 середина диапазона измерения
     bool m_overshort_1=false;
     bool m_overshort_2=false;
 

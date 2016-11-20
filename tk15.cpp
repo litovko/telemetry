@@ -32,13 +32,13 @@ tk15::tk15()
         connect(m_client, SIGNAL(readyRead()), SLOT(onClientReadyRead()));
     }
 
-    //qDebug()<<"START CRC8:"<<"U11234567890"<<CRC8("U11234567890");
+
 
 }
 
 tk15::~tk15()
 {
-    saveSettings();
+    //saveSettings();
     qDebug()<<"Деструктор класса ТК15";
     if(!m_tcp) delete m_client;
 }
@@ -114,6 +114,7 @@ void tk15::readSettings()
     setAngle1k(settings.value( "K_angle1k", 0).toDouble());
     setAngle2k(settings.value( "K_angle2k", 0).toDouble());
     setShift(settings.value( "K_shift", 2048).toDouble());
+    setShift_pressure(settings.value( "K_shift", 2048+850).toDouble());
     setTimer_connect_interval(settings.value( "Connect_interval", 20000).toInt());
     setTimer_showdata_interval(settings.value( "Show_interval", 500).toInt());
     qDebug()<<"tcp:"<<tcp()
@@ -344,7 +345,7 @@ void tk15::readData()
 
         crc = CRC8(Datagramma.left(Datagramma.length()-2));
         crc0=(unsigned char)Datagramma[Datagramma.length()-1];
-        qDebug()<<"crc0 :"<<::QString().number(crc0)<<"SRC :"<<::QString().number(crc);
+        //qDebug()<<"crc0 :"<<::QString().number(crc0)<<"SRC :"<<::QString().number(crc);
         //qDebug()<<"Datagramma->:"<<Datagramma.toHex();
         if (crc0!=crc) //&& d_type==type_digital
         {
@@ -358,7 +359,7 @@ void tk15::readData()
             setOvershort_1(!(Datagramma.at(2)&1));
             setOvershort_2(!(Datagramma.at(2)&2));
 
-            setTemperature(bytes2double(Datagramma.at(4), Datagramma.at(3))*0.065);  //коэффициент для цифрового датчика
+            setTemperature(bytes2double(Datagramma.at(4), Datagramma.at(3),0)*0.065);  //коэффициент для цифрового датчика
 
             setAngle1(-angle1k()+qRadiansToDegrees(qAsin( ( (double)((unsigned char)Datagramma.at(6)+(unsigned char)Datagramma.at(5)*256-2048)/512))));
             setAngle2(-angle2k()+qRadiansToDegrees(qAsin( ( (double)((unsigned char)Datagramma.at(8)+(unsigned char)Datagramma.at(7)*256-2048)/512))));
@@ -369,14 +370,14 @@ void tk15::readData()
         if(d_type==type_analog&&Datagramma.length()>=len_analog) {
 
 
-            setVoltage(voltagek()*bytes2double(Datagramma.at(3), Datagramma.at(2)));
+            setVoltage(voltagek()*bytes2double(Datagramma.at(3), Datagramma.at(2),m_shift));
 
 
-            setCurrent1(current1k()*(bytes2double(Datagramma.at(5), Datagramma.at(4))));
-            setCurrent2(current2k()*(bytes2double(Datagramma.at(7), Datagramma.at(6))));
-            setCurrent3(current3k()*(bytes2double(Datagramma.at(9), Datagramma.at(8))));
+            setCurrent1(current1k()*(bytes2double(Datagramma.at(5), Datagramma.at(4), m_shift)));
+            setCurrent2(current2k()*(bytes2double(Datagramma.at(7), Datagramma.at(6), m_shift)));
+            setCurrent3(current3k()*(bytes2double(Datagramma.at(9), Datagramma.at(8), m_shift)));
 
-            setPressure(pressurek()*(bytes2double(Datagramma.at(11), Datagramma.at(10))));
+            setPressure(pressurek()*(bytes2double(Datagramma.at(11), Datagramma.at(10), m_shift_pressure)));
             m_count+=1;
 
         }
@@ -384,7 +385,7 @@ void tk15::readData()
         Data=Data.mid(i+l, Data.length());
         i=Data.indexOf(0x55);
     }//end while
-    qDebug()<<"truncated:"<<Data.toHex();
+    //qDebug()<<"truncated:"<<Data.toHex();
 
 
 }
@@ -629,9 +630,19 @@ uint16_t tk15::CRC16(QByteArray data) {
         return crc;
 }
 
-double tk15::bytes2double(const unsigned char bst, const unsigned char bml)
+double tk15::bytes2double(const unsigned char bst, const unsigned char bml, const int shift)
 {
-    return (double)bst*256+bml-m_shift;
+    return (double)bst*256+bml-shift;
+}
+
+double tk15::shift_pressure() const
+{
+    return m_shift_pressure;
+}
+
+void tk15::setShift_pressure(double shift_pressure)
+{
+    m_shift_pressure = shift_pressure;
 }
 
 double tk15::shift() const
