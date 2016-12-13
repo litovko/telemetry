@@ -316,9 +316,13 @@ void tk15::readData()
             qDebug()<< "ERROR Data.append(Datagramma)";
         }
 
-    }  
-    Data=Data.right(2*len_analog+2*len_digital+10);
-
+    }
+    try {
+        Data=Data.right(2*len_analog+2*len_digital+10);
+    }
+    catch (...) {
+        qDebug()<< "Data=Data.right(2*len_analog+2*len_digital+10)";
+    }
     int i=Data.indexOf(0x55);
 
     while (i>=0&&Data.length()>=len_digital) //(len_analog<len_digital?len_analog:len_digital)
@@ -333,7 +337,7 @@ void tk15::readData()
         }
         else if (d_type==type_analog)  {
                 Datagramma=Data.mid(i, len_analog);
-                if (Datagramma.length()<len_digital) break;
+                if (Datagramma.length()<len_analog) break;
              }
              else {
                 Data=Data.mid(i+1);
@@ -357,6 +361,7 @@ void tk15::readData()
         }
 
         if(d_type==type_digital&&Datagramma.length()>=len_digital) {
+            qDebug()<<"Digital";
             setOvershort_1(!(Datagramma.at(2)&1));
             setOvershort_2(!(Datagramma.at(2)&2));
 
@@ -370,7 +375,7 @@ void tk15::readData()
         }
         if(d_type==type_analog&&Datagramma.length()>=len_analog) {
 
-
+            qDebug()<<"Analog";
             setVoltage(voltagek()*bytes2double(Datagramma.at(3), Datagramma.at(2),m_shift));
 
 
@@ -383,7 +388,8 @@ void tk15::readData()
 
         }
         l=d_type==type_digital?len_digital:len_analog;
-        Data=Data.mid(i+l, Data.length());
+        qDebug()<<"l="<<l;
+        Data=Data.mid(i+l);
         i=Data.indexOf(0x55);
     }//end while
     //qDebug()<<"truncated:"<<Data.toHex();

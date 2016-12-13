@@ -87,7 +87,9 @@ Window {
             //anchors.centerIn: parent
             height:300
             width:300
-            anchors.centerIn: parent
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: panel.bottom
+            anchors.topMargin: 20
             roll: Math.round(tk.angle1)
             pitch: Math.round(tk.angle2)
         }
@@ -110,33 +112,29 @@ Window {
             }
             opacity: 0.8
             width: rect.width-anchors.margins*2
-            height: 160
+            height: prib.height
             color: "black"
 
-            Row {
+            Flow {
+                id: prib
                 anchors.margins:   3
                 anchors.top: parent.top
                 anchors.left: parent.left
-                Rectangle {
-                    color:"transparent";
+                anchors.right: parent.right
+
+                MyLamp {
                     width:  150;
                     height: 150;
-                    anchors.margins: 0
-//                    anchors.top: parent.top
-//                    anchors.left: parent.left
-                    Pribor {
-                        width: parent.width-10; height: parent.height-10
-                        maximumValue: 120
-                        minimunValue: -20
-                        stepSize: 20
-                        //anchors.centerIn: parent
-                        value: tk.temperature
-                        centerТext: "t\u00B0"
-                        bottomText: "Температура"
-                        warningThreshold: maximumValue*0.8
-                        minorTickmarks:1
-                    }
-                 }
+                    active: tk.overshort_1
+                    bottomText: "Овершот 1"
+                }
+                MyLamp {
+                    width:  150;
+                    height: 150;
+                    active: tk.overshort_2
+                    bottomText: "Овершот 2"
+                }
+
 
                 Rectangle {
                     color:"transparent";
@@ -159,19 +157,6 @@ Window {
                         precision: 0
                     }
                  }
-                MyLamp {
-                    width:  150;
-                    height: 150;
-                    active: tk.overshort_1
-                    bottomText: "Овершот 1"
-                }
-                MyLamp {
-                    width:  150;
-                    height: 150;
-                    active: tk.overshort_2
-                    bottomText: "Овершот 2"
-                }
-
                 Rectangle {
                     color:"transparent";
                     width:  150;
@@ -246,6 +231,26 @@ Window {
                         warningThreshold: maximumValue*0.8
                         minorTickmarks:4
                         precision: 1
+                    }
+                 }
+                Rectangle {
+                    color:"transparent";
+                    width:  150;
+                    height: 150;
+                    anchors.margins: 0
+//                    anchors.top: parent.top
+//                    anchors.left: parent.left
+                    Pribor {
+                        width: parent.width-10; height: parent.height-10
+                        maximumValue: 120
+                        minimunValue: -20
+                        stepSize: 20
+                        //anchors.centerIn: parent
+                        value: 9//tk.temperature
+                        centerТext: "t\u00B0"
+                        bottomText: "Температура"
+                        warningThreshold: maximumValue*0.8
+                        minorTickmarks:1
                     }
                  }
             }
