@@ -5,7 +5,7 @@ Item {
     id: lamp
     property bool active: false
     property string bottomText: "ЛАМПЫ[F2]"
-    property int fontSize: 12
+    property int fontSize: 10
     property bool error: false
     Rectangle {
         color: "transparent"
@@ -31,6 +31,7 @@ Item {
                 color: "transparent"
                 Text {
                     text: lamp.bottomText;
+                    //font.family: "Leelawadee UI"
                     font.pointSize: lamp.fontSize
                     //fontSizeMode: Text.Fit
                     color: !error?"yellow":"lightgray"

@@ -289,7 +289,7 @@ Window {
 
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    font.pointSize: 10
+                    font.pointSize: 9
                 }
             }
             Rectangle {
@@ -302,10 +302,9 @@ Window {
                     anchors.centerIn: parent
                     color: "#e3e60f"
                     text:  " Адрес:"+tk.address+ " Порт:" +tk.port+ " "+(tk.tcp?"TCP":"UDP");
-                    font.bold: true
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    font.pointSize: 10
+                    font.pointSize: 9
                 }
             }
         }
